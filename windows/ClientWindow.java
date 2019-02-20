@@ -705,10 +705,7 @@ private final LocalDate currentDate = LocalDate.now();
     }//GEN-LAST:event_ageTextFieldKeyReleased
 
     private void editButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_editButtonActionPerformed
-        setVisible(false);
-        JOptionPane.showMessageDialog(this, new ThemesPanel(), "Редактирование", 
-                JOptionPane.PLAIN_MESSAGE);
-        setVisible(true);
+        JOptionPane.showMessageDialog(this, new ThemesPanel(), "Редактирование", JOptionPane.PLAIN_MESSAGE);
         fillThemesBox();
     }//GEN-LAST:event_editButtonActionPerformed
         
