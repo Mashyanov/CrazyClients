@@ -10,6 +10,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
+import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
 /**
  *
@@ -82,6 +83,7 @@ boolean result = false;
     try {
         fis = new FileInputStream(dir);
         client.changeWorkingDirectory(":)");
+        client.setFileType(FTP.BINARY_FILE_TYPE);
         String fileName = date.format(DateTimeFormatter.ofPattern("dd-MM-uuuu(HH-mm-ss)"));
         String files[] = client.listNames();
         System.out.println(files.length);
