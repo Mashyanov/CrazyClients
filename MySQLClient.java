@@ -38,10 +38,12 @@ public final class MySQLClient {
             JOptionPane.showMessageDialog(new JPanel(), 
                     "Ошибка при подключении к базе данных\nПрограмма будет закрыта", 
                     "Критическая ошибка", JOptionPane.ERROR_MESSAGE);
-             Logger.getLogger(MySQLClient.class.getName()).log(Level.SEVERE, null, ex);
-            System.exit(1);
+             System.exit(1);
         } catch (FileNotFoundException ex) {
-            Logger.getLogger(MySQLClient.class.getName()).log(Level.SEVERE, null, ex);
+            JOptionPane.showMessageDialog(new JPanel(), 
+                    "Ненайден файл конфигурации DBProperties.properties\nПрограмма будет закрыта", 
+                    "Критическая ошибка", JOptionPane.ERROR_MESSAGE);
+             System.exit(1);
         } catch (IOException ex) {
             Logger.getLogger(MySQLClient.class.getName()).log(Level.SEVERE, null, ex);
         } 
