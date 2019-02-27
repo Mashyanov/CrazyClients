@@ -31,7 +31,6 @@ public final class MySQLClient {
         try {   prop.load(new FileInputStream("DBProperties.properties"));
              
             Class.forName(prop.getProperty("driver"));
-//            Class.forName("com.mysql.cj.jdbc.Driver");
             try (Connection con = DriverManager.getConnection(prop.getProperty("url"),prop.getProperty("user"),prop.getProperty("password"))) {
                 System.out.println("Connected to " + con.getCatalog());
             }
