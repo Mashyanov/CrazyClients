@@ -8,6 +8,7 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Properties;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFrame;
@@ -19,22 +20,31 @@ import javax.swing.JPanel;
  * @author Александр Машьянов, mashyanov1987@gmail.com
  */
 public final class MySQLClient {
-    private String url="jdbc:sqlserver://localhost\\SQLExpress;database=CrazyClients";
-    private String user = "sa";
-    private String password = "1234";
+    private Properties prop = new Properties();
     private static MySQLClient msqlc = null;
     
-    private MySQLClient() {
-        try {
-            Class.forName("com.microsoft.sqlserver.jdbc.SQLServerDriver");
-            try (Connection con = DriverManager.getConnection(url,user,password)) {
+   private MySQLClient() {
+        try {   
+            prop.load(new FileInputStream("DBProperties.properties"));
+            Class.forName(prop.getProperty("driver"));
+            try (Connection con = DriverManager.getConnection(prop.getProperty("url"),
+                                                              prop.getProperty("user"),
+                                                              prop.getProperty("password"))) {
                 System.out.println("Connected to " + con.getCatalog());
             }
         } catch (ClassNotFoundException | SQLException ex) {
             JOptionPane.showMessageDialog(new JPanel(), 
                     "Ошибка при подключении к базе данных\nПрограмма будет закрыта", 
                     "Критическая ошибка", JOptionPane.ERROR_MESSAGE);
-        }
+            System.exit(1);
+        } catch (FileNotFoundException ex) {
+            JOptionPane.showMessageDialog(new JPanel(), 
+                    "Не найден файл данных DBProperties.properties\nПрограмма будет закрыта", 
+                    "Критическая ошибка", JOptionPane.ERROR_MESSAGE);
+            System.exit(1);
+        } catch (IOException ex) {
+            Logger.getLogger(MySQLClient.class.getName()).log(Level.SEVERE, null, ex);
+        } 
     }
     
     public final static MySQLClient GetInstance(){
