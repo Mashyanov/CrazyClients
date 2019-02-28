@@ -81,7 +81,7 @@ public final class MyFTPClient {
             fis = new FileInputStream(dir);
             client.setFileType(FTP.BINARY_FILE_TYPE);
             client.changeWorkingDirectory(prop.getProperty("FTPWorkDirectory"));
-            String fileName = date.format(DateTimeFormatter.ofPattern("dd-MM-uuuu(HH-mm-ss)"))+"devPC";
+            String fileName = date.format(DateTimeFormatter.ofPattern("dd-MM-uuuu(HH-mm-ss)"))++prop.getProperty("PCIndex");
             String files[] = client.listNames();
             if(files.length > 9)
                 client.deleteFile(files[2]);
