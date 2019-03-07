@@ -88,6 +88,9 @@ public final class MyFTPClient {
             result = client.appendFile(fileName+".bak", fis);
             fis.close();
             return result;
+        } catch (FTPConnectionClosedException ex){
+            disconnect();
+            connect();
         } catch (IOException ex) {
             System.out.println("IO error " + ex.getMessage());
         }
