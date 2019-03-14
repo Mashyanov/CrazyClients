@@ -72,7 +72,7 @@ public final class MyFTPClient {
         }
     }
     
-    public boolean uploadDBBackUp() {
+      public boolean uploadDBBackUp() {
         boolean result = false; 
         LocalDateTime date = LocalDateTime.now();
         File dir = new File("backup/cc.bak");
@@ -82,9 +82,27 @@ public final class MyFTPClient {
             client.setFileType(FTP.BINARY_FILE_TYPE);
             client.changeWorkingDirectory(prop.getProperty("FTPWorkDirectory"));
             String fileName = date.format(DateTimeFormatter.ofPattern("dd-MM-uuuu(HH-mm-ss)"))+prop.getProperty("PCIndex");
-            String files[] = client.listNames();
-            if(files.length > 9)
-                client.deleteFile(files[2]);
+            ArrayList<String> files = new ArrayList<>();
+            for (String s : (client.listNames())) {
+                if(s.length() > 2) files.add(s);
+            }
+            files.sort((f1, f2) -> {
+                
+                return  Integer.valueOf(f1.substring(6, 10)) - Integer.valueOf(f2.substring(6, 10))!=0 ? 
+                        Integer.valueOf(f1.substring(6, 10)) - Integer.valueOf(f2.substring(6, 10)) :
+                        Integer.valueOf(f1.substring(3, 5)) - Integer.valueOf(f2.substring(3, 5))!=0 ? 
+                        Integer.valueOf(f1.substring(3, 5)) - Integer.valueOf(f2.substring(3, 5)) :
+                        Integer.valueOf(f1.substring(0, 2)) - Integer.valueOf(f2.substring(0, 2))!=0 ? 
+                        Integer.valueOf(f1.substring(0, 2)) - Integer.valueOf(f2.substring(0, 2)) :
+                        Integer.valueOf(f1.substring(11, 13)) - Integer.valueOf(f2.substring(11, 13))!=0 ? 
+                        Integer.valueOf(f1.substring(11, 13)) - Integer.valueOf(f2.substring(11, 13)) :
+                        Integer.valueOf(f1.substring(14, 16)) - Integer.valueOf(f2.substring(14, 16))!=0 ? 
+                        Integer.valueOf(f1.substring(14, 16)) - Integer.valueOf(f2.substring(14, 16)) :
+                        Integer.valueOf(f1.substring(17, 19)) - Integer.valueOf(f2.substring(17, 19));
+                        });
+           
+            if(files.size() > 9)
+                client.deleteFile(files.get(0));
             result = client.appendFile(fileName+".bak", fis);
             fis.close();
             return result;
@@ -96,5 +114,3 @@ public final class MyFTPClient {
         }
         return result;
     }
-
-}
