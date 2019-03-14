@@ -26,28 +26,28 @@ public final class MySQLClient {
     
     private static MySQLClient msqlc = null;
     private Properties prop = new Properties();
+    private MySequrityManager msm = MySequrityManager.getInstance();
     
     private MySQLClient() {
-        try {   prop.load(new FileInputStream("DBProperties.properties"));
-             
+        try {   
+            prop.load(new FileInputStream("DBProperties.properties"));
             Class.forName(prop.getProperty("driver"));
-            try (Connection con = DriverManager.getConnection(prop.getProperty("url"),prop.getProperty("user"),prop.getProperty("password"))) {
-                System.out.println("Connected to " + con.getCatalog());
-            }
-        } catch (ClassNotFoundException | SQLException ex) {
-            JOptionPane.showMessageDialog(new JPanel(), 
-                    "Ошибка при подключении к базе данных\nПрограмма будет закрыта", 
-                    "Критическая ошибка", JOptionPane.ERROR_MESSAGE);
-             System.exit(1);
+//            password = MySequrityManager.getInstance().getSQLPassword();
         } catch (FileNotFoundException ex) {
             JOptionPane.showMessageDialog(new JPanel(), 
-                    "Ненайден файл конфигурации DBProperties.properties\nПрограмма будет закрыта", 
+                    "Не найден файл конфигурации БД DBProperties.properties\nПрограмма будет закрыта", 
                     "Критическая ошибка", JOptionPane.ERROR_MESSAGE);
-             System.exit(1);
+            System.exit(1);
         } catch (IOException ex) {
             Logger.getLogger(MySQLClient.class.getName()).log(Level.SEVERE, null, ex);
-        } 
+        } catch (ClassNotFoundException ex) {
+            JOptionPane.showMessageDialog(new JPanel(), 
+                    "Не найден файл конфигурации БД DBProperties.properties\nПрограмма будет закрыта", 
+                    "Критическая ошибка", JOptionPane.ERROR_MESSAGE);
+            System.exit(1);
+        }
     }
+    
     
     public final static MySQLClient GetInstance(){
         if(msqlc == null) msqlc = new MySQLClient();
@@ -60,7 +60,7 @@ public final class MySQLClient {
         File ccFile = new File("backup/cc.bak");
         if(!dir.exists()) dir.mkdir();
         if(ccFile.exists()) ccFile.delete();
-        try (Connection con = DriverManager.getConnection(prop.getProperty("url"),prop.getProperty("user"),prop.getProperty("password"))) {
+        try (Connection con = DriverManager.getConnection(prop.getProperty("url"),prop.getProperty("user"), msm.getSQLPassword())) {
             String query = 
                     "BACKUP DATABASE CrazyClients " +
                     "TO DISK = '"+dir.getCanonicalPath()+"\\cc.bak'";
@@ -81,7 +81,7 @@ public final class MySQLClient {
      public CrazyClient getClient(int id){
         CrazyClient crazyClient = null;
         ResultSet rs;
-        try (Connection con = DriverManager.getConnection(prop.getProperty("url"),prop.getProperty("user"),prop.getProperty("password"))) {
+        try (Connection con = DriverManager.getConnection(prop.getProperty("url"),prop.getProperty("user"), msm.getSQLPassword())) {
             String query = "Select * from Clients WHERE CLIENT_ID = "+ id;
                  
             rs = con.createStatement().executeQuery(query);
@@ -115,7 +115,7 @@ public final class MySQLClient {
     public int getClientsCount(boolean active){
         int result;
         String activeString = active ? "1" : "0";
-        try (Connection con = DriverManager.getConnection(prop.getProperty("url"),prop.getProperty("user"),prop.getProperty("password"))) {
+        try (Connection con = DriverManager.getConnection(prop.getProperty("url"),prop.getProperty("user"), msm.getSQLPassword())) {
             ResultSet rs = con.createStatement().executeQuery(
                     "SELECT COUNT(CLIENT_ID) FROM Clients  WHERE IS_ACTUAL = " + activeString);
             rs.next();
@@ -135,7 +135,7 @@ public final class MySQLClient {
         ArrayList<CrazyClient> list = new ArrayList<>();
         ResultSet rs;
         CrazyClient crazyClient;
-        try (Connection con = DriverManager.getConnection(prop.getProperty("url"),prop.getProperty("user"),prop.getProperty("password"))) {
+        try (Connection con = DriverManager.getConnection(prop.getProperty("url"),prop.getProperty("user"), msm.getSQLPassword())) {
             rs = con.createStatement().executeQuery(
                     "SELECT CLIENT_ID, FIRST_NAME, LAST_NAME, PHONE_NUMBER, DATE_LAST "
                             + "FROM Clients "
@@ -163,7 +163,7 @@ public final class MySQLClient {
         CrazyClient crazyClient;
         ArrayList<CrazyClient> list = new ArrayList<>();
         ResultSet rs;
-        try (Connection con = DriverManager.getConnection(prop.getProperty("url"),prop.getProperty("user"),prop.getProperty("password"))) {
+        try (Connection con = DriverManager.getConnection(prop.getProperty("url"),prop.getProperty("user"), msm.getSQLPassword())) {
                         
             rs = con.createStatement().executeQuery(filter.createQuery());
             while(rs.next()){
@@ -185,7 +185,7 @@ public final class MySQLClient {
      * @return массив всех занятых пользовательских id      */
     public int[] getClientsID(){
         int [] result;
-        try (Connection con = DriverManager.getConnection(prop.getProperty("url"),prop.getProperty("user"),prop.getProperty("password"))) {
+        try (Connection con = DriverManager.getConnection(prop.getProperty("url"),prop.getProperty("user"), msm.getSQLPassword())) {
             ResultSet rs = con.createStatement().executeQuery("SELECT COUNT(*) FROM Clients");
             rs.next();
             result = new int[rs.getInt(1)];
@@ -209,7 +209,7 @@ public final class MySQLClient {
         ArrayList<CrazyClient> list = new ArrayList<>();
         ResultSet rs;
         CrazyClient client;
-        try (Connection con = DriverManager.getConnection(prop.getProperty("url"),prop.getProperty("user"),prop.getProperty("password"))) {
+        try (Connection con = DriverManager.getConnection(prop.getProperty("url"),prop.getProperty("user"), msm.getSQLPassword())) {
                         
             rs = con.createStatement().executeQuery("SELECT CLIENT_ID, FIRST_NAME, LAST_NAME FROM Clients WHERE RESPONSE_MAIN='"+theme+"'");
             while(rs.next()){
@@ -228,7 +228,7 @@ public final class MySQLClient {
     /**Метод добавляет клиента в БД
      * @param client новый клиент*/
     public void addClient(CrazyClient client){
-        try (Connection con = DriverManager.getConnection(prop.getProperty("url"),prop.getProperty("user"),prop.getProperty("password"))) {
+        try (Connection con = DriverManager.getConnection(prop.getProperty("url"),prop.getProperty("user"), msm.getSQLPassword())) {
             String query = 
                     "INSERT INTO Clients("
                     + "CLIENT_ID, "
@@ -276,7 +276,7 @@ public final class MySQLClient {
      * @param client клиент для редактирования
      * @return  true - если успешно, false - если нет*/
     public boolean editClient(CrazyClient client){
-        try (Connection con = DriverManager.getConnection(prop.getProperty("url"),prop.getProperty("user"),prop.getProperty("password"))) {
+        try (Connection con = DriverManager.getConnection(prop.getProperty("url"),prop.getProperty("user"), msm.getSQLPassword())) {
             String query = 
                     "UPDATE Clients SET "
                     + "FIRST_NAME = ?, "
@@ -325,7 +325,7 @@ public final class MySQLClient {
     /**Метод удаляет клиента из БД
      * @param client клиент на удаление*/
     public void removeClient(CrazyClient client){
-        try (Connection con = DriverManager.getConnection(prop.getProperty("url"),prop.getProperty("user"),prop.getProperty("password"))) {
+        try (Connection con = DriverManager.getConnection(prop.getProperty("url"),prop.getProperty("user"), msm.getSQLPassword())) {
             con.createStatement().executeUpdate("DELETE FROM Clients WHERE CLIENT_ID="+client.getId());
             con.createStatement().executeUpdate("DELETE FROM Appointments WHERE CLIENT_ID="+client.getId());
         } catch (SQLException ex) {
@@ -334,7 +334,7 @@ public final class MySQLClient {
     
     /**Метод стирает все данные в таблице clients*/
     public void wipeClientsTable(){
-        try (Connection con = DriverManager.getConnection(prop.getProperty("url"),prop.getProperty("user"),prop.getProperty("password"))) {
+        try (Connection con = DriverManager.getConnection(prop.getProperty("url"),prop.getProperty("user"), msm.getSQLPassword())) {
             con.createStatement().executeUpdate("DELETE from Clients");
         } catch (SQLException ex) {
             Logger.getLogger(MySQLClient.class.getName()).log(Level.SEVERE, null, ex);
@@ -349,7 +349,7 @@ public final class MySQLClient {
      * @param client клиент, для которого ищем первое посещение
      * @return первое посещение клиента      */
     public AppointmentDate getAppointmentDate(CrazyClient client){
-         try (Connection con = DriverManager.getConnection(prop.getProperty("url"),prop.getProperty("user"),prop.getProperty("password"))) {
+         try (Connection con = DriverManager.getConnection(prop.getProperty("url"),prop.getProperty("user"), msm.getSQLPassword())) {
             ResultSet rs = con.createStatement().executeQuery(
                     "SELECT * FROM Appointments "
                   + "WHERE client_id=" + String.valueOf(client.getId()) 
@@ -371,7 +371,7 @@ public final class MySQLClient {
     
     /**Метод редактирует посещение. Изменения вносятся в строку-комментарий*/
     public void editAppointmet(AppointmentDate ad){
-        try (Connection con = DriverManager.getConnection(prop.getProperty("url"),prop.getProperty("user"),prop.getProperty("password"))) {
+        try (Connection con = DriverManager.getConnection(prop.getProperty("url"),prop.getProperty("user"), msm.getSQLPassword())) {
             String query = 
                       "UPDATE Appointments SET "
                     + "PROCESS = ? "
@@ -395,7 +395,7 @@ public final class MySQLClient {
                 + "from Appointments "
                 + "WHERE "
                 + "APPOINTMENT_ID = " + String.valueOf(appointmentDateID);
-        try (Connection con = DriverManager.getConnection(prop.getProperty("url"),prop.getProperty("user"),prop.getProperty("password"))) {
+        try (Connection con = DriverManager.getConnection(prop.getProperty("url"),prop.getProperty("user"), msm.getSQLPassword())) {
             ResultSet rs = con.createStatement().executeQuery(query);
             while(rs.next())
                ad = new AppointmentDate(rs.getInt(1), rs.getInt(2), 
@@ -410,7 +410,7 @@ public final class MySQLClient {
     /**Метод добавления в БД сведений и посещении
     * @param ad посещение*/
     public void addAppointment(AppointmentDate ad){
-        try (Connection con = DriverManager.getConnection(prop.getProperty("url"),prop.getProperty("user"),prop.getProperty("password"))) {
+        try (Connection con = DriverManager.getConnection(prop.getProperty("url"),prop.getProperty("user"), msm.getSQLPassword())) {
             String querty = 
                     "INSERT INTO "
                     + "Appointments ("
@@ -433,7 +433,7 @@ public final class MySQLClient {
     * @param client клиент, для которого ищем первое посещение
     * @return первое посещение клиента      */
     public AppointmentDate getFirstAppointment(CrazyClient client){
-         try (Connection con = DriverManager.getConnection(prop.getProperty("url"),prop.getProperty("user"),prop.getProperty("password"))) {
+         try (Connection con = DriverManager.getConnection(prop.getProperty("url"),prop.getProperty("user"), msm.getSQLPassword())) {
             ResultSet rs = con.createStatement().executeQuery(
                     "SELECT * FROM Appointments "
                   + "WHERE client_id=" + String.valueOf(client.getId()) 
@@ -457,7 +457,7 @@ public final class MySQLClient {
      * @param client клиент, для которого ищем последнее посещение
      * @return последнее посещение клиента      */ 
     public AppointmentDate getLastAppointment(CrazyClient client){
-         try (Connection con = DriverManager.getConnection(prop.getProperty("url"),prop.getProperty("user"),prop.getProperty("password"))) {
+         try (Connection con = DriverManager.getConnection(prop.getProperty("url"),prop.getProperty("user"), msm.getSQLPassword())) {
             ResultSet rs = con.createStatement().executeQuery(
                     "SELECT * FROM Appointments "
                   + "WHERE client_id=" + String.valueOf(client.getId()) 
@@ -485,7 +485,7 @@ public final class MySQLClient {
      * @return коллекция посещений клиента в заданный месяц     */
     public ArrayList<AppointmentDate> getAppointmentsForMonth(int clientId, int month, int year){
         ArrayList<AppointmentDate> dates = new ArrayList<>();
-        try (Connection con = DriverManager.getConnection(prop.getProperty("url"),prop.getProperty("user"),prop.getProperty("password"))) {
+        try (Connection con = DriverManager.getConnection(prop.getProperty("url"),prop.getProperty("user"), msm.getSQLPassword())) {
             ResultSet rs = con.createStatement().executeQuery(
                     "SELECT * from Appointments WHERE client_id=" + String.valueOf(clientId) +
                             "AND MONTH(date)="+String.valueOf(month) + 
@@ -502,7 +502,7 @@ public final class MySQLClient {
     
        public ArrayList<AppointmentDate> getAppointmentsForClient(int clientId){
         ArrayList<AppointmentDate> dates = new ArrayList<>();
-        try (Connection con = DriverManager.getConnection(prop.getProperty("url"),prop.getProperty("user"),prop.getProperty("password"))) {
+        try (Connection con = DriverManager.getConnection(prop.getProperty("url"),prop.getProperty("user"), msm.getSQLPassword())) {
             ResultSet rs = con.createStatement().executeQuery(
                     "SELECT * from Appointments WHERE client_id= " + 
                             String.valueOf(clientId) + " ORDER BY DATE ASC");
@@ -519,7 +519,7 @@ public final class MySQLClient {
     /**метод удаляет посещение из БД
     * @param AppointmentId id посещения*/
     public void removeAppointment(int AppointmentId){
-        try (Connection con = DriverManager.getConnection(prop.getProperty("url"),prop.getProperty("user"),prop.getProperty("password"))) {
+        try (Connection con = DriverManager.getConnection(prop.getProperty("url"),prop.getProperty("user"), msm.getSQLPassword())) {
             String querty = "DELETE FROM Appointments WHERE APPOINTMENT_ID = " 
                     + AppointmentId;
             con.createStatement().executeUpdate(querty);
@@ -534,7 +534,7 @@ public final class MySQLClient {
     public ArrayList<AppointmentDate> getAllAppointments(){
         
         ArrayList<AppointmentDate> list = new ArrayList<>();
-        try (Connection con = DriverManager.getConnection(prop.getProperty("url"),prop.getProperty("user"),prop.getProperty("password"))) {
+        try (Connection con = DriverManager.getConnection(prop.getProperty("url"),prop.getProperty("user"), msm.getSQLPassword())) {
             ResultSet rs = con.createStatement().executeQuery("Select * from Appointments");
             while(rs.next())
                 list.add(new AppointmentDate(rs.getInt(1), rs.getInt(2), 
@@ -547,7 +547,7 @@ public final class MySQLClient {
     
     /**Метод стирает все данные в таблице Appointnments*/
     public void wipeAppointmentsTable(){
-        try (Connection con = DriverManager.getConnection(prop.getProperty("url"),prop.getProperty("user"),prop.getProperty("password"))) {
+        try (Connection con = DriverManager.getConnection(prop.getProperty("url"),prop.getProperty("user"), msm.getSQLPassword())) {
             con.createStatement().executeUpdate("DELETE from Appointments");
         } catch (SQLException ex) {
             Logger.getLogger(MySQLClient.class.getName()).log(Level.SEVERE, null, ex);
@@ -559,7 +559,7 @@ public final class MySQLClient {
     
     public ArrayList<String> getThemes(){
         ArrayList<String> strings = new ArrayList<>();
-        try (Connection con = DriverManager.getConnection(prop.getProperty("url"),prop.getProperty("user"),prop.getProperty("password"))) {
+        try (Connection con = DriverManager.getConnection(prop.getProperty("url"),prop.getProperty("user"), msm.getSQLPassword())) {
             ResultSet rs = con.createStatement().executeQuery("SELECT * "
                     + "from Themes ORDER BY Theme ASC");
             while(rs.next())
@@ -573,7 +573,7 @@ public final class MySQLClient {
        
     public void addTheme(String themeName){
         if(themeName==null || themeName.isEmpty()) return;
-        try (Connection con = DriverManager.getConnection(prop.getProperty("url"),prop.getProperty("user"),prop.getProperty("password"))) {
+        try (Connection con = DriverManager.getConnection(prop.getProperty("url"),prop.getProperty("user"), msm.getSQLPassword())) {
             con.createStatement().executeUpdate("INSERT INTO Themes VALUES (\'" + themeName + "\')");
         } catch (SQLException ex) {
             Logger.getLogger(MySQLClient.class.getName()).log(Level.SEVERE, null, ex);
@@ -584,7 +584,7 @@ public final class MySQLClient {
     public void editTheme(String oldName, String newName){
         if(newName==null || newName.isEmpty()) return;
         if(newName.equalsIgnoreCase(oldName))  return;
-        try (Connection con = DriverManager.getConnection(prop.getProperty("url"),prop.getProperty("user"),prop.getProperty("password"))) {
+        try (Connection con = DriverManager.getConnection(prop.getProperty("url"),prop.getProperty("user"), msm.getSQLPassword())) {
                 con.createStatement().executeUpdate(
                         "UPDATE Themes SET " +
                         "theme = \'" + newName + "\'"+
@@ -626,7 +626,7 @@ public final class MySQLClient {
     }}
 
     public void removeTheme(String themeName){   
-    try (Connection con = DriverManager.getConnection(prop.getProperty("url"),prop.getProperty("user"),prop.getProperty("password"))) {
+    try (Connection con = DriverManager.getConnection(prop.getProperty("url"),prop.getProperty("user"), msm.getSQLPassword())) {
             String querty = "DELETE FROM Themes WHERE theme = \'" + themeName+"\'";
             con.createStatement().executeUpdate(querty);
         } catch (SQLException ex) {
