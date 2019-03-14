@@ -86,23 +86,22 @@ public final class MyFTPClient {
             for (String s : (client.listNames())) {
                 if(s.length() > 2) files.add(s);
             }
-            files.sort((f1, f2) -> {
-                
-                return  Integer.valueOf(f1.substring(6, 10)) - Integer.valueOf(f2.substring(6, 10))!=0 ? 
-                        Integer.valueOf(f1.substring(6, 10)) - Integer.valueOf(f2.substring(6, 10)) :
-                        Integer.valueOf(f1.substring(3, 5)) - Integer.valueOf(f2.substring(3, 5))!=0 ? 
-                        Integer.valueOf(f1.substring(3, 5)) - Integer.valueOf(f2.substring(3, 5)) :
-                        Integer.valueOf(f1.substring(0, 2)) - Integer.valueOf(f2.substring(0, 2))!=0 ? 
-                        Integer.valueOf(f1.substring(0, 2)) - Integer.valueOf(f2.substring(0, 2)) :
-                        Integer.valueOf(f1.substring(11, 13)) - Integer.valueOf(f2.substring(11, 13))!=0 ? 
-                        Integer.valueOf(f1.substring(11, 13)) - Integer.valueOf(f2.substring(11, 13)) :
-                        Integer.valueOf(f1.substring(14, 16)) - Integer.valueOf(f2.substring(14, 16))!=0 ? 
-                        Integer.valueOf(f1.substring(14, 16)) - Integer.valueOf(f2.substring(14, 16)) :
-                        Integer.valueOf(f1.substring(17, 19)) - Integer.valueOf(f2.substring(17, 19));
-                        });
-           
-            if(files.size() > 9)
+            if(files.size() > 9){
+                files.sort((f1, f2) -> {
+                    return  Integer.valueOf(f1.substring(6, 10)) - Integer.valueOf(f2.substring(6, 10))!=0 ? 
+                            Integer.valueOf(f1.substring(6, 10)) - Integer.valueOf(f2.substring(6, 10)) :
+                            Integer.valueOf(f1.substring(3, 5)) - Integer.valueOf(f2.substring(3, 5))!=0 ? 
+                            Integer.valueOf(f1.substring(3, 5)) - Integer.valueOf(f2.substring(3, 5)) :
+                            Integer.valueOf(f1.substring(0, 2)) - Integer.valueOf(f2.substring(0, 2))!=0 ? 
+                            Integer.valueOf(f1.substring(0, 2)) - Integer.valueOf(f2.substring(0, 2)) :
+                            Integer.valueOf(f1.substring(11, 13)) - Integer.valueOf(f2.substring(11, 13))!=0 ? 
+                            Integer.valueOf(f1.substring(11, 13)) - Integer.valueOf(f2.substring(11, 13)) :
+                            Integer.valueOf(f1.substring(14, 16)) - Integer.valueOf(f2.substring(14, 16))!=0 ? 
+                            Integer.valueOf(f1.substring(14, 16)) - Integer.valueOf(f2.substring(14, 16)) :
+                            Integer.valueOf(f1.substring(17, 19)) - Integer.valueOf(f2.substring(17, 19));
+                            });
                 client.deleteFile(files.get(0));
+            }
             result = client.appendFile(fileName+".bak", fis);
             fis.close();
             return result;
@@ -114,3 +113,5 @@ public final class MyFTPClient {
         }
         return result;
     }
+
+}
