@@ -54,8 +54,8 @@ public class MySequrityManager {
     public final boolean checkPassword(String pswd){
         try {
             this.key = pswd.getBytes();
-            String password = decode(prop.getProperty("password"));
-            Connection con = DriverManager.getConnection(prop.getProperty("url"),prop.getProperty("user"), password);
+            Connection con = DriverManager.getConnection(prop.getProperty("url"),prop.getProperty("user"), 
+                                                         decode(prop.getProperty("SQLpassword")));
             System.out.println("Connected to " + con.getCatalog());
         } catch (SQLException ex) {
              JOptionPane.showMessageDialog(new JPanel(), 
@@ -68,7 +68,6 @@ public class MySequrityManager {
         
     private String decode(String text){
         byte[] decodedPassword = text.getBytes();
-        if(key==null) System.out.println("nullkeu");
         for (int i = 0; i < decodedPassword.length; i++) {
             decodedPassword[i] = (byte) (decodedPassword[i]^key[i%key.length]);
         }
