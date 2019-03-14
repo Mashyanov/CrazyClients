@@ -44,7 +44,7 @@ public class MySequrityManager {
     }
    
     public String getSQLPassword(){
-        return decode(prop.getProperty("password"));
+        return decode(prop.getProperty("SQLpassword"));
     }
     
     public String getFTPPassword(){
