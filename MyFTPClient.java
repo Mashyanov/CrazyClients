@@ -12,6 +12,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import org.apache.commons.net.ftp.FTP;
 import org.apache.commons.net.ftp.FTPClient;
+import org.apache.commons.net.ftp.FTPConnectionClosedException;
 /**
  *
  * @author Александр Машьянов, mashyanov1987@gmail.com
@@ -21,7 +22,6 @@ public final class MyFTPClient {
     private FileInputStream fis;
     private FTPClient client;
     private final Properties prop = new Properties();
-
     private static MyFTPClient myFTPClient = null;
 
     private MyFTPClient() {
@@ -47,7 +47,7 @@ public final class MyFTPClient {
             if(!client.isConnected()) return 11;
             client.enterLocalPassiveMode();
             boolean logged = client.login(prop.getProperty("FTPlogin"), 
-                                          prop.getProperty("FTPpassword"));
+                                          MySequrityManager.getInstance().getFTPPassword());
             if(logged) {
                 System.out.println("Успешное подключение!");
             return 0;
